@@ -40,7 +40,12 @@ const safeName = n => String(n || 'image').toLowerCase().replace(/\.[a-z0-9]+$/,
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { error: 'POST only' });
   let p; try { p = await req.json(); } catch { return json(400, { error: 'Bad request' }); }
-  if (!env('EDIT_PASSWORD') || !env('GITHUB_TOKEN')) return json(500, { error: 'Editing isn’t set up yet: add EDIT_PASSWORD and GITHUB_TOKEN in Netlify.' });
+  const missing = ['EDIT_PASSWORD', 'GITHUB_TOKEN'].filter(k => !env(k));
+  if (missing.length) {
+    const seen = Object.keys(process.env).filter(k => /pass|token|git|edit/i.test(k) && !/^(NETLIFY|AWS|LAMBDA|_)/.test(k));
+    return json(500, { error: `Editing isn’t set up yet. Netlify can’t see: ${missing.join(', ')}.` + (seen.length ? ` It can see: ${seen.join(', ')}.` : '') + ' Check the spelling, then redeploy.' });
+  }
+  if ((env('EDIT_PASSWORD') || '').length < 8) return json(500, { error: 'EDIT_PASSWORD must be at least 8 characters.' });
   if (!passwordOk(p.password)) { await new Promise(r => setTimeout(r, 800)); return json(401, { error: 'Wrong password.' }); }
   if (p.action === 'check') return json(200, { ok: true });
   if (p.action !== 'save') return json(400, { error: 'Unknown action' });
