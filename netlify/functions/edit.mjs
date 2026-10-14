@@ -7,7 +7,13 @@ import { timingSafeEqual } from 'node:crypto';
 
 const REPO = 'Stevebrandt064/landr-site', BRANCH = 'main', FILE = 'index.html';
 const API = `https://api.github.com/repos/${REPO}/contents/`;
-const env = k => (globalThis.Netlify?.env?.get?.(k)) ?? process.env[k];
+// Accept the setting name in any case (e.g. edit_password or EDIT_PASSWORD).
+const env = k => {
+  const v = (globalThis.Netlify?.env?.get?.(k)) ?? process.env[k];
+  if (v) return v.trim();
+  const alt = Object.keys(process.env).find(x => x.toLowerCase() === k.toLowerCase());
+  return alt ? String(process.env[alt]).trim() : (globalThis.Netlify?.env?.get?.(k.toLowerCase()) || '').trim() || undefined;
+};
 const json = (status, body) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
 function passwordOk(given) {
