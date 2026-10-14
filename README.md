@@ -20,4 +20,11 @@ Add a post to the top of the `FEED` list in `index.html` (search for `const FEED
 Authors: `SB` (Stephen Brandt) or `TB` (Trent Butler). Kinds: `win`, `update`, `learning`.
 
 ## Editing
-Ask Claude, or edit `index.html` in GitHub's web editor (pencil icon) and commit.
+**Steve/Trent:** go to landr.com.au/edit, log in, click text or images, hit Save. Live in ~1 minute.
+Each save is a commit to `main` ("Site edits via landr.com.au/edit").
+
+**Claude:** always `git pull` before editing, since site-editor saves commit straight to `main`.
+
+Editor files: `edit.js` (on-page editor, loads only on /edit), `netlify/functions/edit.mjs` (save endpoint),
+`netlify/functions/lib/apply.mjs` (safe text/image replacement in index.html).
+Netlify env vars required: `EDIT_PASSWORD`, `GITHUB_TOKEN` (fine-grained, Contents read/write on this repo only).
